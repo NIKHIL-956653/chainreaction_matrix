@@ -23,21 +23,19 @@ Object.assign(flashOverlay.style, {
 });
 document.body.appendChild(flashOverlay);
 
-// -------------------------------------------------------------
 // PARTICLE POOL
-// -------------------------------------------------------------
 const MAX_PARTICLES = 80;
 const particlePool = [];
 
 function getParticle() {
     if (particlePool.length > 0) return particlePool.pop();
     const p = document.createElement("div");
-    // Self-contained styles so they work even if CSS is missing
     Object.assign(p.style, {
         position: "absolute",
         width: "8px", height: "8px",
         borderRadius: "50%",
-        pointerEvents: "none"
+        pointerEvents: "none",
+        willChange: "transform, opacity" 
     });
     return p;
 }
@@ -49,35 +47,33 @@ function releaseParticle(p) {
     }
 }
 
-// -------------------------------------------------------------
-// EXPORTED FUNCTIONS
-// -------------------------------------------------------------
-
 export function spawnParticles(x, y, color) {
-    const count = 12; 
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const count = isMobile ? 8 : 16; 
+    const size = isMobile ? "10px" : "6px"; 
+
     for (let i = 0; i < count; i++) {
         const p = getParticle();
         fxLayer.appendChild(p);
         
+        p.style.width = size;
+        p.style.height = size;
         p.style.backgroundColor = color;
-        p.style.boxShadow = `0 0 10px ${color}`;
+        p.style.boxShadow = `0 0 12px ${color}`;
         p.style.left = x + "px";
         p.style.top = y + "px";
-        p.style.transform = "scale(1)";
-        p.style.opacity = "1";
         
         const angle = Math.random() * Math.PI * 2;
-        const velocity = 30 + Math.random() * 50; 
+        const velocity = 40 + Math.random() * 60; 
         const tx = Math.cos(angle) * velocity;
         const ty = Math.sin(angle) * velocity;
-        const duration = 400 + Math.random() * 200;
 
         const anim = p.animate([
-            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-            { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+            { transform: 'translate3d(0, 0, 0) scale(1.2)', opacity: 1 },
+            { transform: `translate3d(${tx}px, ${ty}px, 0) scale(0)`, opacity: 0 }
         ], {
-            duration: duration,
-            easing: 'cubic-bezier(0, .9, .57, 1)'
+            duration: 500,
+            easing: 'ease-out'
         });
 
         anim.onfinish = () => releaseParticle(p);
@@ -87,10 +83,16 @@ export function spawnParticles(x, y, color) {
 export function triggerShake() {
     const board = document.querySelector('.board');
     if (!board) return;
+
+    if (navigator.vibrate) {
+        navigator.vibrate(20); 
+    }
+
     board.classList.remove('shake-active');
     void board.offsetWidth; 
     board.classList.add('shake-active');
-    setTimeout(() => board.classList.remove('shake-active'), 400);
+    
+    setTimeout(() => board.classList.remove('shake-active'), 200);
 }
 
 export function triggerFlash(color = "white") {
@@ -101,23 +103,4 @@ export function triggerFlash(color = "white") {
 
 export function setBackgroundPulse(color) {
     document.documentElement.style.setProperty('--glow', color);
-}
-
-// --- THIS IS THE MISSING FUNCTION CAUSING THE CRASH ---
-export function triggerChainFever() {
-    const text = document.getElementById('feverText');
-    const body = document.body;
-
-    if (text) {
-        text.classList.remove('active');
-        void text.offsetWidth; 
-        text.classList.add('active');
-    }
-
-    body.classList.add('fever-mode');
-    triggerShake(); 
-
-    setTimeout(() => {
-        body.classList.remove('fever-mode');
-    }, 2000);
 }

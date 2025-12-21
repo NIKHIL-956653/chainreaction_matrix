@@ -96,8 +96,24 @@
     </div>
   </div>
 
-
   <div id="gameView" class="screen">
+    
+    <div id="matrixSidebar" class="matrix-sidebar">
+        <div class="sidebar-header">SYSTEM CONTROLS</div>
+        <div class="control-group">
+            <label>Rain Logic</label>
+            <button id="toggleRain" class="matrix-btn active">RAIN: ON</button>
+        </div>
+        <div class="control-group">
+            <label>Symbol Set</label>
+            <button id="toggleSymbols" class="matrix-btn">MODE: KANJI</button>
+        </div>
+        <div class="control-group">
+            <label>Reaction Flash</label>
+            <button id="toggleFlash" class="matrix-btn active">FLASH: ON</button>
+        </div>
+    </div>
+
     <div class="game-header">
         <button id="backBtn" class="btn small">⬅ Menu</button>
         
@@ -179,16 +195,13 @@
 
   <script>
     window.onload = function() {
-        // Wait 1.5 seconds, then verify the loader is gone
         setTimeout(() => {
             const loader = document.getElementById('loader');
             const menu = document.getElementById('mainMenu');
             if(loader) {
-                // If loader is still there, forcibly remove it
                 loader.style.opacity = '0';
                 setTimeout(() => { 
                     loader.style.display = 'none'; 
-                    // Make sure the menu is visible
                     if(menu) menu.style.display = 'flex'; 
                 }, 500);
             }

@@ -8,16 +8,16 @@ const sounds = {
 // Set Volume
 Object.values(sounds).forEach(s => s.volume = 0.5);
 
-// New Mute State
+// Mute State
 let isMuted = false;
 
 export function toggleMute() {
     isMuted = !isMuted;
-    return isMuted; // Returns true if muted, false if sound is on
+    return isMuted; 
 }
 
 export function playSound(name) {
-  if (isMuted) return; // Stop if muted
+  if (isMuted) return; 
   
   const src = sounds[name];
   if (!src) return;
