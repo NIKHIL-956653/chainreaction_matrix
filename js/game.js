@@ -3,7 +3,7 @@ import { playSound, toggleMute } from "./sound.js";
 import { capacity, neighbors, drawCell } from "./board.js";
 import { buildPlayerSettings } from "./player.js";
 import { makeAIMove } from "./ai.js";         
-import { spawnParticles, triggerShake, triggerFlash, setBackgroundPulse } from "./fx.js"; 
+import { spawnParticles, triggerShake, triggerFlash, setBackgroundPulse, startCelebration } from "./fx.js"; 
 import { recordGameEnd, tryUnlockAchievement, loadData, saveTheme, getSavedTheme } from "./storage.js";
 import { initMatrix, drawMatrix, stopMatrix, triggerMatrixFlash, matrixSettings } from "./matrix.js";
 
@@ -53,38 +53,34 @@ function init() {
         });
     }
 
-    // Matrix Sidebar Controls
+    // --- SYSTEM SIDEBAR CONTROLS ---
+    $("#sidebarToggle")?.addEventListener('click', () => {
+        document.getElementById("systemSidebar").classList.toggle('active');
+    });
+
+    boardEl.addEventListener('click', () => {
+        document.getElementById("systemSidebar").classList.remove('active');
+    });
+
     $("#toggleRain")?.addEventListener('click', (e) => {
         matrixSettings.rainOn = !matrixSettings.rainOn;
         e.target.classList.toggle('active', matrixSettings.rainOn);
         e.target.textContent = `RAIN: ${matrixSettings.rainOn ? 'ON' : 'OFF'}`;
     });
 
-    // --- ADDED SYSTEM SIDEBAR LOGIC ---
-    // 1. Toggle Sidebar when clicking the "SYSTEM" tab
-    document.getElementById("sidebarToggle")?.addEventListener('click', () => {
-        document.getElementById("systemSidebar").classList.toggle('active');
-    });
-
-    // 2. Automatically hide sidebar when you click the board to play
-    boardEl.addEventListener('click', () => {
-        document.getElementById("systemSidebar").classList.remove('active');
-    });
-    
-    // 3. Symbol Set Interaction (Kanji vs Binary)
     $("#toggleSymbols")?.addEventListener('click', (e) => {
         matrixSettings.japaneseOn = !matrixSettings.japaneseOn;
         e.target.classList.toggle('active', matrixSettings.japaneseOn);
         e.target.textContent = `MODE: ${matrixSettings.japaneseOn ? 'KANJI' : 'BINARY'}`;
     });
 
-    // 4. Reaction Flash Interaction (ON vs OFF)
     $("#toggleFlash")?.addEventListener('click', (e) => {
         matrixSettings.flashOn = !matrixSettings.flashOn;
         e.target.classList.toggle('active', matrixSettings.flashOn);
         e.target.textContent = `FLASH: ${matrixSettings.flashOn ? 'ON' : 'OFF'}`;
     });
-    // ----------------------------------
+
+    // --- END SIDEBAR CONTROLS ---
 
     $("#hintBtn")?.addEventListener('click', useHint);
     $("#watchAdBtn")?.addEventListener('click', playFakeAd);
@@ -131,14 +127,11 @@ function backToMenu() {
     clearTimeout(aiTimeout);
     stopTimer();
     closeModal();
-    
-    // Switch UI Screens
     document.getElementById('gameView').classList.remove('active');
     const menu = document.getElementById('mainMenu');
     menu.classList.add('active');
     menu.style.display = 'flex'; 
-    
-    boardEl.innerHTML = ""; // Clear board for fresh start
+    boardEl.innerHTML = ""; 
 }
 
 function resizeBoard() {
@@ -191,8 +184,6 @@ function endGameDueToTime() { playing = false; showGameOver("Time's Up!", "Objec
 function handleMove(x, y) {
   if (!playing || playerTypes[current].type === "ai") return;
   if (board[y][x].owner !== -1 && board[y][x].owner !== current) return;
-  
-  // FIX: Clear gold trace when you move
   document.querySelectorAll('.last-move').forEach(el => el.classList.remove('last-move'));
   makeMove(x, y);
 }
@@ -216,6 +207,14 @@ async function resolveReactions() {
   const sleep = ms => new Promise(r => requestAnimationFrame(() => setTimeout(r, ms)));
   let loops = 0;
   while (q.length && loops++ < 600) {
+    // --- SAFETY BRAKE ---
+    updateScores(); 
+    if (movesMade >= players.length) {
+        const alive = players.map((_, i) => scores[i] > 0).filter(Boolean);
+        if (alive.length === 1) break; 
+    }
+    // -----------------------------------------------------------
+
     if (document.body.classList.contains('theme-matrix')) triggerMatrixFlash();
     const wave = [...new Set(q.map(([x, y]) => `${x},${y}`))].map(s => s.split(",").map(Number)); 
     q.length = 0;
@@ -223,13 +222,16 @@ async function resolveReactions() {
     for (const [x, y] of wave) {
       const cap = capacity(x, y, rows, cols); const cell = board[y][x];
       if (cell.count < cap) continue;
+
+      // --- RECONNECTED SPARKLES ---
+      spawnParticles(x, y, players[current].color); 
+      // ---------------------------------------------------
+
       cell.count -= cap; if (cell.count === 0) cell.owner = -1; playSound("explode");
-      
       drawCell(x, y, board, boardEl, cols, players, current);
 
       for (const [nx, ny] of neighbors(x, y, rows, cols, board)) { 
         board[ny][nx].owner = current; board[ny][nx].count += 1; 
-        // FIX: Spreading orbs redrawing
         drawCell(nx, ny, board, boardEl, cols, players, current);
       }
     }
@@ -243,7 +245,6 @@ function processTurn() {
   aiTimeout = setTimeout(() => {
     let move = makeAIMove(board, current, playerTypes[current].difficulty, rows, cols, players.length);
     if (move) {
-        // FIX: GOLD GLOW TRACE ONLY FOR TRIGGER CELL
         document.querySelectorAll('.last-move').forEach(el => el.classList.remove('last-move'));
         lastMoveCell = boardEl.children[move.y * cols + move.x];
         lastMoveCell?.classList.add('last-move');
@@ -256,14 +257,31 @@ function paintAll(turn = false) { for (let y = 0; y < rows; y++) for (let x = 0;
 function updateScores() { scores = players.map(() => 0); let total = 0; for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) if (board[y][x].owner !== -1) { scores[board[y][x].owner] += board[y][x].count; total += board[y][x].count; } if (territoryMeter && total > 0) { territoryMeter.innerHTML = ''; players.forEach((p, i) => { if (scores[i] > 0) { const b = document.createElement('div'); b.className = 'meter-bar'; b.style.width = (scores[i]/total)*100 + '%'; b.style.backgroundColor = p.color; territoryMeter.appendChild(b); } }); } }
 function updateStatus() { if (players[current]) { statusText.textContent = `${players[current].name}'s turn`; turnBadge.style.background = players[current].color; } }
 function undoMove() { if (!history.length) return; clearTimeout(aiTimeout); const prev = JSON.parse(history.pop()); board = prev.board; current = prev.current; playing = prev.playing; firstMove = prev.firstMove; scores = prev.scores; movesMade = prev.movesMade; closeModal(); paintAll(true); updateStatus(); updateScores(); }
-function checkWin() { const alive = players.map((_,i) => scores[i] > 0).filter(Boolean); if (movesMade >= players.length && alive.length === 1) { playing = false; recordGameEnd(0, 'hard'); showGameOver("Victory!", "Game Over!", true); return true; } return false; }
+function checkWin() { const alive = players.map((_,i) => scores[i] > 0).filter(Boolean); if (movesMade >= players.length && alive.length === 1) { playing = false; recordGameEnd(0, 'hard'); showGameOver("Victory!", "System Secured!", true); return true; } return false; }
 function showStats() { const data = loadData(); document.getElementById('statsBody').innerHTML = `Matches: ${data.stats.matches}<br>Losses: ${data.stats.losses}`; document.getElementById('statsModal').style.display = 'flex'; }
 function useHint() { if (!playing || playerTypes[current].type === 'ai') return; if (hintsRemaining <= 0) { document.getElementById('adModal').style.display = 'flex'; return; } const best = makeAIMove(board, current, "hard", rows, cols, players.length); if (best) { hintsRemaining--; updateHintUI(); const el = boardEl.children[best.y * cols + best.x]; el.classList.add('hint-active'); setTimeout(() => el.classList.remove('hint-active'), 3000); } }
 function playFakeAd() { if (isWatchingAd) return; isWatchingAd = true; document.getElementById('adProgressContainer').style.display = 'block'; let w = 0; const int = setInterval(() => { w += 2; document.getElementById('adBar').style.width = w + '%'; if (w >= 100) { clearInterval(int); finishAd(); } }, 50); }
 function finishAd() { isWatchingAd = false; document.getElementById('adModal').style.display = 'none'; document.getElementById('adProgressContainer').style.display = 'none'; document.getElementById('adBar').style.width = '0%'; hintsRemaining += 5; updateHintUI(); playSound('win'); }
 function updateHintUI() { const el = document.getElementById('hintCount'); if (el) el.textContent = hintsRemaining; }
 function advanceTurn() { let loop = 0; do { current = (current + 1) % players.length; loop++; } while (firstMove[current] && scores[current] === 0 && loop < players.length); updateStatus(); paintAll(true); if (playing) processTurn(); }
-function showGameOver(t, m, w) { modalTitle.textContent = t; modalTitle.style.color = w ? "var(--primary)" : "#ff4757"; modalBody.innerHTML = m; modalNextBtn.style.display = "none"; gameModal.style.display = "flex"; }
+
+// --- MATRIX THEMED CELEBRATION ---
+function showGameOver(t, m, w) {
+    if (document.body.classList.contains('theme-matrix')) {
+        for(let i=0; i<5; i++) setTimeout(triggerMatrixFlash, i * 150); 
+    }
+    if (w) {
+        playSound('win'); 
+        if (typeof startCelebration === 'function') startCelebration(); 
+    }
+    modalTitle.textContent = t;
+    modalTitle.style.color = w ? "var(--primary)" : "#ff4757";
+    modalBody.innerHTML = m;
+    modalNextBtn.style.display = "none";
+    gameModal.style.display = "flex";
+}
+// ---------------------------------------------------------------------
+
 function closeModal() { gameModal.style.display = "none"; }
 
 // Start the game initialization

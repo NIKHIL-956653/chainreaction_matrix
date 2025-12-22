@@ -104,3 +104,16 @@ export function triggerFlash(color = "white") {
 export function setBackgroundPulse(color) {
     document.documentElement.style.setProperty('--glow', color);
 }
+
+// Add this to the bottom of js/fx.js to fix the import error
+export function startCelebration() {
+    console.log("Matrix System Overload Initiated...");
+    // This is where your graffiti/confetti logic will live
+    for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+            const x = Math.random() * window.innerWidth;
+            const y = Math.random() * window.innerHeight;
+            spawnParticles(x, y, '#00ff41'); // Matrix Green Sparks
+        }, i * 50);
+    }
+}
