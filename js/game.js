@@ -1,9 +1,9 @@
-// js/game.js
+/* js/game.js */
 import { playSound, toggleMute } from "./sound.js";
 import { capacity, neighbors, drawCell } from "./board.js";
 import { buildPlayerSettings } from "./player.js";
 import { makeAIMove } from "./ai.js";         
-import { spawnParticles, triggerShake, triggerFlash, setBackgroundPulse, startCelebration } from "./fx.js"; 
+import { spawnParticles, triggerShake, triggerFlash, triggerGlitch, startCelebration } from "./fx.js"; 
 import { recordGameEnd, tryUnlockAchievement, loadData, saveTheme, getSavedTheme } from "./storage.js";
 import { initMatrix, drawMatrix, stopMatrix, triggerMatrixFlash, matrixSettings } from "./matrix.js";
 
@@ -40,8 +40,9 @@ let current = 0, board = [], playing = true, firstMove = [], history = [];
 let scores = [], movesMade = 0, mode = "normal", timer = null, timeLimit = 120, timeLeft = timeLimit;
 let aiTimeout = null, gameStartTime = 0, lowestCellCount = Infinity, maxChainReaction = 0, hintsRemaining = 0, isWatchingAd = false, lastMoveCell = null;
 
-// Cyberpunk HUD State
+// THEME STATES
 let cyberSettings = { scanlines: true, glitch: false, sharpHUD: true };
+let magmaSettings = { lavaActive: true }; // NEW: Magma Core state
 
 function init() {
     initMatrix(); 
@@ -61,16 +62,18 @@ function init() {
         const sidebar = document.getElementById("systemSidebar");
         const isCyber = document.body.classList.contains('theme-cyberpunk');
         const isMatrix = document.body.classList.contains('theme-matrix');
+        const isMagma = document.body.classList.contains('theme-magma'); // NEW
         
         // Toggle specific sections based on theme
         document.getElementById("matrixSidebarControls").style.display = isMatrix ? 'block' : 'none';
         document.getElementById("cyberpunkSidebarControls").style.display = isCyber ? 'block' : 'none';
+        document.getElementById("magmaSidebarControls") ? document.getElementById("magmaSidebarControls").style.display = isMagma ? 'block' : 'none' : null;
         
         sidebar.classList.add('active');
     });
 
     $("#closeSidebar")?.addEventListener('click', (e) => {
-        e.stopPropagation();
+        e.stopPropagation(); 
         document.getElementById("systemSidebar").classList.remove('active');
     });
 
@@ -97,7 +100,7 @@ function init() {
         e.target.textContent = `FLASH: ${matrixSettings.flashOn ? 'ON' : 'OFF'}`;
     });
 
-    // NEW: Cyberpunk HUD Toggles
+    // Cyberpunk HUD Toggles
     $("#toggleScanlines")?.addEventListener('click', (e) => {
         cyberSettings.scanlines = !cyberSettings.scanlines;
         document.body.classList.toggle('scanlines-active', cyberSettings.scanlines);
@@ -105,11 +108,25 @@ function init() {
         e.target.textContent = `SCANLINES: ${cyberSettings.scanlines ? 'ON' : 'OFF'}`;
     });
 
+    $("#toggleGlitch")?.addEventListener('click', (e) => {
+        cyberSettings.glitch = !cyberSettings.glitch;
+        e.target.classList.toggle('active', cyberSettings.glitch);
+        e.target.textContent = `GLITCH: ${cyberSettings.glitch ? 'ON' : 'OFF'}`;
+    });
+
     $("#toggleHUD")?.addEventListener('click', (e) => {
         cyberSettings.sharpHUD = !cyberSettings.sharpHUD;
         document.body.classList.toggle('hud-sharp', cyberSettings.sharpHUD);
         e.target.classList.toggle('active', cyberSettings.sharpHUD);
         e.target.textContent = `HUD: ${cyberSettings.sharpHUD ? 'SHARP' : 'SOFT'}`;
+    });
+
+    // NEW: Magma Core Toggles
+    $("#toggleLava")?.addEventListener('click', (e) => {
+        magmaSettings.lavaActive = !magmaSettings.lavaActive;
+        document.body.classList.toggle('lava-active', magmaSettings.lavaActive);
+        e.target.classList.toggle('active', magmaSettings.lavaActive);
+        e.target.textContent = `LAVA: ${magmaSettings.lavaActive ? 'ON' : 'OFF'}`;
     });
 
     // --- END SIDEBAR CONTROLS ---
@@ -136,7 +153,7 @@ function init() {
 }
 
 function applyTheme(t) {
-    document.body.classList.remove('theme-cyberpunk', 'theme-magma', 'theme-matrix', 'scanlines-active', 'hud-sharp');
+    document.body.classList.remove('theme-cyberpunk', 'theme-magma', 'theme-matrix', 'scanlines-active', 'hud-sharp', 'lava-active');
     stopMatrix(); 
     if (t === 'theme-matrix') {
         document.body.classList.add('theme-matrix');
@@ -144,9 +161,11 @@ function applyTheme(t) {
         drawMatrix(); 
     } else if (t === 'theme-cyberpunk') {
         document.body.classList.add('theme-cyberpunk');
-        // Initialize Cyber HUD state
         if (cyberSettings.scanlines) document.body.classList.add('scanlines-active');
         if (cyberSettings.sharpHUD) document.body.classList.add('hud-sharp');
+    } else if (t === 'theme-magma') {
+        document.body.classList.add('theme-magma');
+        if (magmaSettings.lavaActive) document.body.classList.add('lava-active');
     } else if (t !== 'default') {
         document.body.classList.add(t);
     }
@@ -251,6 +270,10 @@ async function resolveReactions() {
     }
 
     if (document.body.classList.contains('theme-matrix')) triggerMatrixFlash();
+    
+    // THEME-SPECIFIC REACTION EFFECTS
+    if (cyberSettings.glitch) triggerGlitch();
+
     const wave = [...new Set(q.map(([x, y]) => `${x},${y}`))].map(s => s.split(",").map(Number)); 
     q.length = 0;
 

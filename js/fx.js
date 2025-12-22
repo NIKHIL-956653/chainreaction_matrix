@@ -95,7 +95,7 @@ export function triggerShake() {
     setTimeout(() => board.classList.remove('shake-active'), 200);
 }
 
-// NEW: Cyberpunk Glitch Effect for HUD
+// Cyberpunk Glitch Effect
 export function triggerGlitch() {
     const board = document.querySelector('.board');
     if (!board || !document.body.classList.contains('theme-cyberpunk')) return;
@@ -109,6 +109,22 @@ export function triggerGlitch() {
     }, 150);
 }
 
+// NEW: Magma Heat Surge Effect
+export function triggerHeat() {
+    const board = document.querySelector('.board');
+    if (!board || !document.body.classList.contains('theme-magma')) return;
+
+    // Simulate an intense heat distortion
+    board.style.filter = `contrast(1.2) brightness(1.3) saturate(1.5)`;
+    board.style.transform = `scale(1.01)`;
+    triggerFlash('#ff4500'); // Orange-red flash
+
+    setTimeout(() => {
+        board.style.filter = '';
+        board.style.transform = '';
+    }, 200);
+}
+
 export function triggerFlash(color = "white") {
     flashOverlay.style.backgroundColor = color;
     flashOverlay.style.opacity = "0.4";
@@ -119,18 +135,25 @@ export function setBackgroundPulse(color) {
     document.documentElement.style.setProperty('--glow', color);
 }
 
-// RESTORED & UPDATED: Victory screen handles both themes now
+// RESTORED & UPDATED: Victory screen handles Matrix, Cyber, and Magma
 export function startCelebration() {
     console.log("System Overload Initiated...");
     const isCyber = document.body.classList.contains('theme-cyberpunk');
-    const color = isCyber ? '#fcee0a' : '#00ff41'; // Yellow for Cyber, Green for Matrix
+    const isMagma = document.body.classList.contains('theme-magma');
+    
+    let color = '#00ff41'; // Default Matrix Green
+    if (isCyber) color = '#fcee0a'; // Cyber Yellow
+    if (isMagma) color = '#ff3300'; // Magma Lava Red
 
     for (let i = 0; i < 60; i++) {
         setTimeout(() => {
             const x = Math.random() * window.innerWidth;
             const y = Math.random() * window.innerHeight;
             spawnParticles(x, y, color); 
-            if (isCyber && i % 10 === 0) triggerFlash('#00f0ff'); // Cyan flashes for Cyber
+            
+            // Theme-specific victory flashes
+            if (isCyber && i % 10 === 0) triggerFlash('#00f0ff'); // Cyan for Cyber
+            if (isMagma && i % 8 === 0) triggerFlash('#ffaa00');  // Gold for Magma
         }, i * 50);
     }
 }
