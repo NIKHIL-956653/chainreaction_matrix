@@ -1,4 +1,4 @@
-// js/game.js
+/* js/game.js */
 import { playSound, toggleMute } from "./sound.js";
 import { capacity, neighbors, drawCell } from "./board.js";
 import { buildPlayerSettings } from "./player.js";
@@ -55,7 +55,12 @@ function init() {
 
     // --- SYSTEM SIDEBAR CONTROLS ---
     $("#sidebarToggle")?.addEventListener('click', () => {
-        document.getElementById("systemSidebar").classList.toggle('active');
+        document.getElementById("systemSidebar").classList.add('active');
+    });
+
+    // ADDED: Listener for the new Exit (X) button
+    $("#closeSidebar")?.addEventListener('click', () => {
+        document.getElementById("systemSidebar").classList.remove('active');
     });
 
     boardEl.addEventListener('click', () => {

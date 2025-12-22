@@ -52,6 +52,8 @@ html, body {
     font: 500 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Arial;
     display: flex; flex-direction: column; overflow: hidden;
     transition: background-color 0.5s ease;
+    user-select: none; /* Added to prevent text selection during fast gameplay */
+    -webkit-tap-highlight-color: transparent;
 }
 
 h1 { margin: 18px 0 6px; color: var(--primary); text-shadow: 0 0 18px var(--glow); text-align: center; }
@@ -170,13 +172,13 @@ select, .btn, input[type="color"] { background: #101318; color: #eaf2ff; border:
     left: 0;
     top: 0;
     height: 100vh;
-    width: 200px;
+    width: 220px; /* Slightly wider to accommodate labels */
     background: rgba(0, 0, 0, 0.95);
     border-right: 1px solid var(--matrix-green);
     transform: translateX(-100%); /* Hidden by default */
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     z-index: 3000;
-    padding: 20px;
+    padding: 60px 20px 20px; /* Added padding-top for the close button */
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -187,10 +189,29 @@ select, .btn, input[type="color"] { background: #101318; color: #eaf2ff; border:
     transform: translateX(0); /* Slides in */
 }
 
+/* ADDED: Styling for the Sidebar Exit Button */
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: var(--matrix-green);
+    font-size: 2.5rem;
+    cursor: pointer;
+    line-height: 1;
+    text-shadow: 0 0 10px var(--matrix-green);
+    transition: transform 0.2s ease;
+}
+
+.close-btn:active {
+    transform: scale(0.9);
+}
+
 .sidebar-header { font-size: 0.75rem; color: var(--matrix-green); font-weight: 800; letter-spacing: 2px; border-bottom: 1px solid var(--matrix-green); padding-bottom: 5px; margin-bottom: 10px; }
-.control-group label { display: block; font-size: 0.65rem; color: #008f11; margin-bottom: 4px; }
-.matrix-btn { background: #000; color: #0f0; border: 1px solid #0f0; padding: 8px 10px; font-family: 'Courier New', monospace; font-size: 0.8rem; width: 100%; cursor: pointer; transition: all 0.2s; border-radius: 5px; }
-.matrix-btn.active { background: #0f0; color: #000; box-shadow: 0 0 10px #0f0; }
+.control-group label { display: block; font-size: 0.65rem; color: #008f11; margin-bottom: 4px; text-transform: uppercase; }
+.matrix-btn { background: #000; color: #0f0; border: 1px solid #0f0; padding: 10px; font-family: 'Courier New', monospace; font-size: 0.8rem; width: 100%; cursor: pointer; transition: all 0.2s; border-radius: 5px; }
+.matrix-btn.active { background: #0f0; color: #000; box-shadow: 0 0 10px #0f0; font-weight: bold; }
 
 /* FIX: Low Visibility Rain Behind Board */
 #board {
@@ -202,8 +223,28 @@ select, .btn, input[type="color"] { background: #101318; color: #eaf2ff; border:
     box-shadow: 0 0 25px rgba(0, 0, 0, 0.8) !important;
 }
 
+/* ADDED: Mobile Responsive Fixes */
+@media (max-width: 600px) {
+    #systemSidebar {
+        width: 160px;
+        padding-top: 50px;
+    }
+    .matrix-btn {
+        font-size: 0.65rem;
+        padding: 8px 5px;
+    }
+    .close-btn {
+        font-size: 1.8rem;
+        top: 10px;
+        right: 15px;
+    }
+    #mainMenu h1 {
+        font-size: 1.8rem;
+    }
+}
+
 /* --- MODALS --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 2000; animation: fadeIn 0.3s ease; }
 .modal-content { background: #0a0a0a; border: 2px solid var(--primary); box-shadow: 0 0 30px var(--primary), inset 0 0 20px rgba(71, 242, 255, 0.1); padding: 40px; border-radius: 16px; text-align: center; max-width: 450px; width: 90%; color: #fff; transform: scale(0.9); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }s
