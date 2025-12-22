@@ -101,7 +101,7 @@
     <div id="systemSidebar">
         <button id="closeSidebar" class="close-btn">&times;</button>
         
-        <div class="system-controls">
+        <div id="matrixSidebarControls" class="system-controls">
             <div class="sidebar-header">SYSTEM CONTROLS</div>
             <div class="control-group">
                 <label>Rain Logic</label>
@@ -114,6 +114,22 @@
             <div class="control-group">
                 <label>Reaction Flash</label>
                 <button id="toggleFlash" class="matrix-btn active">FLASH: ON</button>
+            </div>
+        </div>
+
+        <div id="cyberpunkSidebarControls" class="system-controls" style="display: none;">
+            <div class="sidebar-header">CYBERLINK HUD</div>
+            <div class="control-group">
+                <label>Visual Interface</label>
+                <button id="toggleScanlines" class="cyber-btn active">SCANLINES: ON</button>
+            </div>
+            <div class="control-group">
+                <label>System Stability</label>
+                <button id="toggleGlitch" class="cyber-btn">GLITCH: OFF</button>
+            </div>
+            <div class="control-group">
+                <label>Cell Topology</label>
+                <button id="toggleHUD" class="cyber-btn active">HUD: SHARP</button>
             </div>
         </div>
     </div>

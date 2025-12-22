@@ -22,9 +22,26 @@
 
 /* --- THEMES --- */
 body.theme-cyberpunk {
-    --primary: #fcee0a; --glow: #d300c5;
-    --board-bg: #180a18; --cell-bg: #2b112b; --border-color: #d300c566; 
+    --primary: #fcee0a; /* Electric Yellow */
+    --glow: #00f0ff;    /* Neon Cyan */
+    --board-bg: rgba(24, 10, 24, 0.9); 
+    --cell-bg: rgba(43, 17, 43, 0.6); 
+    --border-color: #fcee0a66; 
 }
+
+/* CYBERPUNK SCANLINES */
+body.theme-cyberpunk.scanlines-active::before {
+    content: " ";
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    background-size: 100% 4px, 3px 100%;
+    pointer-events: none;
+    z-index: 5000;
+    opacity: 0.6;
+}
+
 body.theme-cyberpunk #mainMenu { background: radial-gradient(circle at center, #2b002b 0%, #000 100%); }
 
 body.theme-magma {
@@ -135,9 +152,17 @@ select, .btn, input[type="color"] { background: #101318; color: #eaf2ff; border:
     position: relative; width: var(--cell-size, 50px); height: var(--cell-size, 50px); 
     min-width: 0; min-height: 0; border-radius: 14px; background: var(--cell-bg); 
     border: 2px solid var(--border-color); display: grid; place-items: center; cursor: pointer; 
-    transition: border-color .25s ease, box-shadow .25s ease, background-color 0.3s; 
+    transition: border-color .25s ease, box-shadow .25s ease, background-color 0.3s, clip-path 0.4s; 
     contain: layout style paint; 
 }
+
+/* CYBERPUNK HUD SHARP TOPOLOGY */
+body.theme-cyberpunk.hud-sharp .cell {
+    border-radius: 0px;
+    clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+    border-width: 1px;
+}
+
 .cell.owned { border-color: #ffffff44; }
 .cell.pulse { box-shadow: 0 0 10px var(--glow) inset; animation: cellPulse 1.2s ease-in-out infinite; }
 .cell:focus { outline: 2px solid var(--primary); z-index: 2; }
@@ -151,7 +176,7 @@ select, .btn, input[type="color"] { background: #101318; color: #eaf2ff; border:
 .orb::after { content:""; position:absolute; inset:0; border-radius:999px; box-shadow:0 0 16px currentColor; }
 .orb.one { background: currentColor; }
 .pair-improved { width:100%; height:100%; display:flex; justify-content:center; align-items:center; gap:6px; }
-.orb.two-orb { width:42%; height:42%; border-radius:999px; filter:drop-shadow(0 3px 8px #000a); position:relative; animation:float-orb 2.5s ease-in-out infinite; }
+.orb.two-orb { width:42%; height:42%; border-radius: 999px; filter:drop-shadow(0 3px 8px #000a); position:relative; animation:float-orb 2.5s ease-in-out infinite; }
 .pair-improved .orb.two-orb:nth-child(2) { animation-delay: 1.25s; }
 @keyframes float-orb { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-4px);} }
 .bombsvg { width: 120%; height: 120%; display: block; margin: 0 auto; position: relative; filter: drop-shadow(0 0 18px currentColor); animation: jitter 0.1s infinite; }
@@ -166,7 +191,7 @@ select, .btn, input[type="color"] { background: #101318; color: #eaf2ff; border:
 }
 @keyframes lastMovePulse { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.3); transform: scale(1.08); } }
 
-/* --- SYSTEM SIDEBAR (Drawer) --- */
+/* --- SYSTEM SIDEBAR --- */
 #systemSidebar {
     position: fixed;
     left: 0;
@@ -185,17 +210,14 @@ select, .btn, input[type="color"] { background: #101318; color: #eaf2ff; border:
     backdrop-filter: blur(10px);
 }
 
-#systemSidebar.active {
-    transform: translateX(0);
-}
+#systemSidebar.active { transform: translateX(0); }
 
-/* UPDATED: Larger Hitbox for the Close Button */
 .close-btn {
     position: absolute;
     top: 10px;
     right: 10px;
-    width: 44px; /* Minimum recommended touch target size */
-    height: 44px; /* Minimum recommended touch target size */
+    width: 44px;
+    height: 44px;
     background: none;
     border: none;
     color: var(--matrix-green);
@@ -206,11 +228,28 @@ select, .btn, input[type="color"] { background: #101318; color: #eaf2ff; border:
     justify-content: center;
     line-height: 1;
     text-shadow: 0 0 10px var(--matrix-green);
-    z-index: 3001; /* Ensure it stays above sidebar content */
+    z-index: 3001;
 }
 
 .sidebar-header { font-size: 0.75rem; color: var(--matrix-green); font-weight: 800; letter-spacing: 2px; border-bottom: 1px solid var(--matrix-green); padding-bottom: 5px; margin-bottom: 10px; }
 .control-group label { display: block; font-size: 0.65rem; color: #008f11; margin-bottom: 4px; text-transform: uppercase; }
+
+/* CYBERPUNK BUTTON STYLING */
+.cyber-btn {
+    background: #180a18;
+    color: #fcee0a;
+    border: 1px solid #fcee0a;
+    padding: 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 0px;
+    clip-path: polygon(0 0, 90% 0, 100% 30%, 100% 100%, 10% 100%, 0 70%);
+}
+.cyber-btn.active { background: #fcee0a; color: #000; box-shadow: 0 0 15px #fcee0a; font-weight: bold; }
+
 .matrix-btn { background: #000; color: #0f0; border: 1px solid #0f0; padding: 10px; font-family: 'Courier New', monospace; font-size: 0.8rem; width: 100%; cursor: pointer; transition: all 0.2s; border-radius: 5px; }
 .matrix-btn.active { background: #0f0; color: #000; box-shadow: 0 0 10px #0f0; font-weight: bold; }
 
@@ -226,17 +265,9 @@ select, .btn, input[type="color"] { background: #101318; color: #eaf2ff; border:
 
 /* MOBILE RESPONSIVE FIXES */
 @media (max-width: 600px) {
-    #systemSidebar {
-        width: 170px;
-        padding-top: 60px;
-    }
-    .matrix-btn {
-        font-size: 0.65rem;
-        padding: 8px 5px;
-    }
-    #mainMenu h1 {
-        font-size: 1.8rem;
-    }
+    #systemSidebar { width: 170px; padding-top: 60px; }
+    .matrix-btn, .cyber-btn { font-size: 0.65rem; padding: 8px 5px; }
+    #mainMenu h1 { font-size: 1.8rem; }
 }
 
 /* --- MODALS --- */

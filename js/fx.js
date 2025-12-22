@@ -95,6 +95,20 @@ export function triggerShake() {
     setTimeout(() => board.classList.remove('shake-active'), 200);
 }
 
+// NEW: Cyberpunk Glitch Effect for HUD
+export function triggerGlitch() {
+    const board = document.querySelector('.board');
+    if (!board || !document.body.classList.contains('theme-cyberpunk')) return;
+
+    board.style.filter = `hue-rotate(${Math.random() * 90}deg) brightness(1.5)`;
+    board.style.transform = `translate3d(${Math.random() * 4 - 2}px, 0, 0) skew(${Math.random() * 2 - 1}deg)`;
+    
+    setTimeout(() => {
+        board.style.filter = '';
+        board.style.transform = '';
+    }, 150);
+}
+
 export function triggerFlash(color = "white") {
     flashOverlay.style.backgroundColor = color;
     flashOverlay.style.opacity = "0.4";
@@ -105,14 +119,18 @@ export function setBackgroundPulse(color) {
     document.documentElement.style.setProperty('--glow', color);
 }
 
-// Added to fix the "import error" and ensure the victory screen works
+// RESTORED & UPDATED: Victory screen handles both themes now
 export function startCelebration() {
-    console.log("Matrix System Overload Initiated...");
-    for (let i = 0; i < 50; i++) {
+    console.log("System Overload Initiated...");
+    const isCyber = document.body.classList.contains('theme-cyberpunk');
+    const color = isCyber ? '#fcee0a' : '#00ff41'; // Yellow for Cyber, Green for Matrix
+
+    for (let i = 0; i < 60; i++) {
         setTimeout(() => {
             const x = Math.random() * window.innerWidth;
             const y = Math.random() * window.innerHeight;
-            spawnParticles(x, y, '#00ff41'); // Matrix Green Sparks
+            spawnParticles(x, y, color); 
+            if (isCyber && i % 10 === 0) triggerFlash('#00f0ff'); // Cyan flashes for Cyber
         }, i * 50);
     }
 }

@@ -40,6 +40,9 @@ let current = 0, board = [], playing = true, firstMove = [], history = [];
 let scores = [], movesMade = 0, mode = "normal", timer = null, timeLimit = 120, timeLeft = timeLimit;
 let aiTimeout = null, gameStartTime = 0, lowestCellCount = Infinity, maxChainReaction = 0, hintsRemaining = 0, isWatchingAd = false, lastMoveCell = null;
 
+// Cyberpunk HUD State
+let cyberSettings = { scanlines: true, glitch: false, sharpHUD: true };
+
 function init() {
     initMatrix(); 
 
@@ -55,12 +58,19 @@ function init() {
 
     // --- SYSTEM SIDEBAR CONTROLS ---
     $("#sidebarToggle")?.addEventListener('click', () => {
-        document.getElementById("systemSidebar").classList.add('active');
+        const sidebar = document.getElementById("systemSidebar");
+        const isCyber = document.body.classList.contains('theme-cyberpunk');
+        const isMatrix = document.body.classList.contains('theme-matrix');
+        
+        // Toggle specific sections based on theme
+        document.getElementById("matrixSidebarControls").style.display = isMatrix ? 'block' : 'none';
+        document.getElementById("cyberpunkSidebarControls").style.display = isCyber ? 'block' : 'none';
+        
+        sidebar.classList.add('active');
     });
 
-    // UPDATED: Robust listener for the new Exit button
     $("#closeSidebar")?.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevents the click from bubbling to the board
+        e.stopPropagation();
         document.getElementById("systemSidebar").classList.remove('active');
     });
 
@@ -68,6 +78,7 @@ function init() {
         document.getElementById("systemSidebar").classList.remove('active');
     });
 
+    // Matrix Toggles
     $("#toggleRain")?.addEventListener('click', (e) => {
         matrixSettings.rainOn = !matrixSettings.rainOn;
         e.target.classList.toggle('active', matrixSettings.rainOn);
@@ -84,6 +95,21 @@ function init() {
         matrixSettings.flashOn = !matrixSettings.flashOn;
         e.target.classList.toggle('active', matrixSettings.flashOn);
         e.target.textContent = `FLASH: ${matrixSettings.flashOn ? 'ON' : 'OFF'}`;
+    });
+
+    // NEW: Cyberpunk HUD Toggles
+    $("#toggleScanlines")?.addEventListener('click', (e) => {
+        cyberSettings.scanlines = !cyberSettings.scanlines;
+        document.body.classList.toggle('scanlines-active', cyberSettings.scanlines);
+        e.target.classList.toggle('active', cyberSettings.scanlines);
+        e.target.textContent = `SCANLINES: ${cyberSettings.scanlines ? 'ON' : 'OFF'}`;
+    });
+
+    $("#toggleHUD")?.addEventListener('click', (e) => {
+        cyberSettings.sharpHUD = !cyberSettings.sharpHUD;
+        document.body.classList.toggle('hud-sharp', cyberSettings.sharpHUD);
+        e.target.classList.toggle('active', cyberSettings.sharpHUD);
+        e.target.textContent = `HUD: ${cyberSettings.sharpHUD ? 'SHARP' : 'SOFT'}`;
     });
 
     // --- END SIDEBAR CONTROLS ---
@@ -110,12 +136,17 @@ function init() {
 }
 
 function applyTheme(t) {
-    document.body.classList.remove('theme-cyberpunk', 'theme-magma', 'theme-matrix');
+    document.body.classList.remove('theme-cyberpunk', 'theme-magma', 'theme-matrix', 'scanlines-active', 'hud-sharp');
     stopMatrix(); 
     if (t === 'theme-matrix') {
         document.body.classList.add('theme-matrix');
         matrixSettings.rainOn = true;
         drawMatrix(); 
+    } else if (t === 'theme-cyberpunk') {
+        document.body.classList.add('theme-cyberpunk');
+        // Initialize Cyber HUD state
+        if (cyberSettings.scanlines) document.body.classList.add('scanlines-active');
+        if (cyberSettings.sharpHUD) document.body.classList.add('hud-sharp');
     } else if (t !== 'default') {
         document.body.classList.add(t);
     }
