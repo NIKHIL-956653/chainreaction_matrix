@@ -70,6 +70,20 @@ function init() {
     boardEl.addEventListener('click', () => {
         document.getElementById("systemSidebar").classList.remove('active');
     });
+    
+    // 3. Symbol Set Interaction (Kanji vs Binary)
+    $("#toggleSymbols")?.addEventListener('click', (e) => {
+        matrixSettings.japaneseOn = !matrixSettings.japaneseOn;
+        e.target.classList.toggle('active', matrixSettings.japaneseOn);
+        e.target.textContent = `MODE: ${matrixSettings.japaneseOn ? 'KANJI' : 'BINARY'}`;
+    });
+
+    // 4. Reaction Flash Interaction (ON vs OFF)
+    $("#toggleFlash")?.addEventListener('click', (e) => {
+        matrixSettings.flashOn = !matrixSettings.flashOn;
+        e.target.classList.toggle('active', matrixSettings.flashOn);
+        e.target.textContent = `FLASH: ${matrixSettings.flashOn ? 'ON' : 'OFF'}`;
+    });
     // ----------------------------------
 
     $("#hintBtn")?.addEventListener('click', useHint);
