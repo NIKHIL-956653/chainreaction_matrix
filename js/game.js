@@ -3,7 +3,7 @@ import { playSound, toggleMute } from "./sound.js";
 import { capacity, neighbors, drawCell } from "./board.js";
 import { buildPlayerSettings } from "./player.js";
 import { makeAIMove } from "./ai.js";         
-import { spawnParticles, triggerShake, triggerFlash, triggerGlitch, startCelebration } from "./fx.js"; 
+import { spawnParticles, triggerShake, triggerFlash, triggerGlitch, triggerHeat, startCelebration } from "./fx.js"; 
 import { recordGameEnd, tryUnlockAchievement, loadData, saveTheme, getSavedTheme } from "./storage.js";
 import { initMatrix, drawMatrix, stopMatrix, triggerMatrixFlash, matrixSettings } from "./matrix.js";
 
@@ -42,7 +42,7 @@ let aiTimeout = null, gameStartTime = 0, lowestCellCount = Infinity, maxChainRea
 
 // THEME STATES
 let cyberSettings = { scanlines: true, glitch: false, sharpHUD: true };
-let magmaSettings = { lavaActive: true }; // NEW: Magma Core state
+let magmaSettings = { lavaActive: true, heatActive: true }; // NEW: Full Magma Logic
 
 function init() {
     initMatrix(); 
@@ -62,7 +62,7 @@ function init() {
         const sidebar = document.getElementById("systemSidebar");
         const isCyber = document.body.classList.contains('theme-cyberpunk');
         const isMatrix = document.body.classList.contains('theme-matrix');
-        const isMagma = document.body.classList.contains('theme-magma'); // NEW
+        const isMagma = document.body.classList.contains('theme-magma'); //
         
         // Toggle specific sections based on theme
         document.getElementById("matrixSidebarControls").style.display = isMatrix ? 'block' : 'none';
@@ -127,6 +127,12 @@ function init() {
         document.body.classList.toggle('lava-active', magmaSettings.lavaActive);
         e.target.classList.toggle('active', magmaSettings.lavaActive);
         e.target.textContent = `LAVA: ${magmaSettings.lavaActive ? 'ON' : 'OFF'}`;
+    });
+
+    $("#toggleHeat")?.addEventListener('click', (e) => {
+        magmaSettings.heatActive = !magmaSettings.heatActive;
+        e.target.classList.toggle('active', magmaSettings.heatActive);
+        e.target.textContent = `HEAT: ${magmaSettings.heatActive ? 'ON' : 'OFF'}`;
     });
 
     // --- END SIDEBAR CONTROLS ---
@@ -273,6 +279,7 @@ async function resolveReactions() {
     
     // THEME-SPECIFIC REACTION EFFECTS
     if (cyberSettings.glitch) triggerGlitch();
+    if (magmaSettings.heatActive) triggerHeat(); // NEW: Magma Interactivity
 
     const wave = [...new Set(q.map(([x, y]) => `${x},${y}`))].map(s => s.split(",").map(Number)); 
     q.length = 0;

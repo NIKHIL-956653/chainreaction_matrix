@@ -101,7 +101,7 @@
     <div id="systemSidebar">
         <button id="closeSidebar" class="close-btn">&times;</button>
         
-        <div id="matrixSidebarControls" class="system-controls">
+        <div id="matrixSidebarControls" class="system-controls" style="display: none;">
             <div class="sidebar-header">SYSTEM CONTROLS</div>
             <div class="control-group">
                 <label>Rain Logic</label>
@@ -132,22 +132,30 @@
                 <button id="toggleHUD" class="cyber-btn active">HUD: SHARP</button>
             </div>
         </div>
+
+        <div id="magmaSidebarControls" class="system-controls" style="display: none;">
+            <div class="sidebar-header">MAGMA CORE</div>
+            <div class="control-group">
+                <label>Tectonic Pulse</label>
+                <button id="toggleLava" class="magma-btn active">LAVA: ON</button>
+            </div>
+            <div class="control-group">
+                <label>Thermal Surge</label>
+                <button id="toggleHeat" class="magma-btn active">HEAT: ON</button>
+            </div>
+        </div>
     </div>
 
     <div class="game-header">
         <button id="backBtn" class="btn small">⬅ Menu</button>
-        
         <button id="sidebarToggle" class="btn small" style="font-size: 1.2rem; padding: 4px 8px;">⚙️</button>
-        
         <div class="status-bar">
             <span id="turnBadge" class="badge"></span>
             <span id="statusText">Player 1</span>
         </div>
-
         <button id="hintBtn" class="btn small" style="border-color: #ffd700; color: #ffd700; margin-right:5px;">
             💡 <span id="hintCount">0</span>
         </button>
-
         <div id="timerContainer" style="display:none;">
             <span id="timerDisplay"><span id="timeLeft"></span>s</span>
         </div>
@@ -166,7 +174,6 @@
     </div>
     
     <select id="timerSelect" style="display:none;"><option value="120">2m</option></select>
-    
     <button id="soundBtn" class="floating-btn">🔊</button>
   </div>
 
@@ -186,14 +193,12 @@
     <div class="modal-content">
       <h2 class="modal-title" style="color: #ffd700;">Need Help?</h2>
       <p style="margin-bottom: 20px;">Watch a short ad to get <b>5 Hints</b>!</p>
-      
       <div id="adProgressContainer" style="display:none; margin: 20px 0;">
           <div style="background:#333; height:10px; border-radius:5px; overflow:hidden;">
               <div id="adBar" style="width:0%; height:100%; background:#00ffcc; transition:width 0.1s linear;"></div>
           </div>
           <p style="font-size:0.8em; color:#888; margin-top:5px;">Playing Ad...</p>
       </div>
-
       <div class="modal-actions">
         <button id="closeAdBtn" class="modal-btn secondary">No Thanks</button>
         <button id="watchAdBtn" class="modal-btn primary" style="background:#ffd700; color:black;">📺 Watch Ad</button>
