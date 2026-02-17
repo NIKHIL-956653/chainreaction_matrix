@@ -7,10 +7,29 @@ const el = (t, c, attrs = {}) => {
   return n;
 };
 
-// CAPACITY LOGIC
+// CAPACITY LOGIC with memoization
+const capacityCache = new Map();
+
+// Export function to clear cache when starting new games
+export function clearCapacityCache() {
+  capacityCache.clear();
+}
+
+// Utility function for efficient cell cloning
+export function cloneCell(cell) {
+  return { owner: cell.owner, count: cell.count, isBlocked: cell.isBlocked };
+}
+
 export const capacity = (x, y, rows, cols) => {
+  // Create a unique key for this board configuration
+  const key = `${x},${y},${rows},${cols}`;
+  if (capacityCache.has(key)) {
+    return capacityCache.get(key);
+  }
   const edges = [y == 0, y == rows - 1, x == 0, x == cols - 1].filter(Boolean).length;
-  return edges === 2 ? 2 : edges === 1 ? 3 : 4;
+  const result = edges === 2 ? 2 : edges === 1 ? 3 : 4;
+  capacityCache.set(key, result);
+  return result;
 };
 
 // NEIGHBORS (Wall Aware and Block-Check)

@@ -28,12 +28,17 @@ document.body.appendChild(flashOverlay);
 let particles = [];
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
+// Optimize: Add debouncing to resize handler
+let resizeTimeout;
 function resize() {
     canvas.width = window.innerWidth * window.devicePixelRatio;
     canvas.height = window.innerHeight * window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 }
-window.addEventListener('resize', resize);
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(resize, 100);
+});
 resize();
 
 // CORE ANIMATION LOOP

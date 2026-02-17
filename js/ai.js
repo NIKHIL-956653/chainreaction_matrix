@@ -1,5 +1,5 @@
 /* js/ai.js - God-Mode Intelligence with Professional Prediction Engine */
-import { capacity, neighbors } from "./board.js";
+import { capacity, neighbors, cloneCell } from "./board.js";
 
 const WIN_SCORE = 10000;
 const LOS_SCORE = -10000;
@@ -53,7 +53,14 @@ function evaluateBoard(board, player, rows, cols) {
 }
 
 function simulateBoardState(initialBoard, x, y, player, rows, cols) {
-    const clone = initialBoard.map(row => row.map(c => ({ ...c })));
+    // Optimize: More efficient shallow copy using utility function
+    const clone = new Array(rows);
+    for (let r = 0; r < rows; r++) {
+        clone[r] = new Array(cols);
+        for (let c = 0; c < cols; c++) {
+            clone[r][c] = cloneCell(initialBoard[r][c]);
+        }
+    }
     clone[y][x].owner = player;
     clone[y][x].count++;
     const workQueue = [[x, y]];
@@ -120,7 +127,14 @@ export function makeAIMove(board, player, difficulty, rows, cols) {
     }
 
     let depth = (difficulty === "hard") ? 3 : 2; // Difficulty scaling
-    const occupancy = board.flat().filter(c => c.owner !== -1).length / (rows * cols);
+    // Optimize: Count occupied cells directly instead of flat().filter()
+    let occupiedCount = 0;
+    for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+            if (board[y][x].owner !== -1) occupiedCount++;
+        }
+    }
+    const occupancy = occupiedCount / (rows * cols);
     if (occupancy > 0.6) depth = 2; // Performance fallback
 
     let bestMoves = [];
