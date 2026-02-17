@@ -130,7 +130,14 @@ function init() {
     modalMenuBtn?.addEventListener("click", () => { closeModal(); backToMenu(); });
 
     handleModeChange();
-    window.addEventListener('resize', () => { if (document.getElementById('gameView')?.classList.contains('active')) resizeBoard(); });
+    // Optimize: Add debouncing to resize handler
+    let resizeBoardTimeout;
+    window.addEventListener('resize', () => { 
+        clearTimeout(resizeBoardTimeout);
+        resizeBoardTimeout = setTimeout(() => {
+            if (document.getElementById('gameView')?.classList.contains('active')) resizeBoard();
+        }, 100);
+    });
 }
 
 function applyTheme(t) {
@@ -234,7 +241,16 @@ function handleMove(x, y) {
 
 async function makeMove(x, y) {
   playSound("click");
-  history.push(JSON.stringify({ board: board.map(r => r.map(c => ({...c}))), current, playing, firstMove: [...firstMove], scores: [...scores], movesMade }));
+  // Optimize: More efficient state cloning - create simpler structure
+  const boardSnapshot = new Array(rows);
+  for (let r = 0; r < rows; r++) {
+    boardSnapshot[r] = new Array(cols);
+    for (let c = 0; c < cols; c++) {
+      const cell = board[r][c];
+      boardSnapshot[r][c] = { owner: cell.owner, count: cell.count, isBlocked: cell.isBlocked };
+    }
+  }
+  history.push(JSON.stringify({ board: boardSnapshot, current, playing, firstMove: [...firstMove], scores: [...scores], movesMade }));
   board[y][x].owner = current; board[y][x].count += 1; movesMade++;
   
   drawCell(x, y, board, boardEl, cols, players, current);
@@ -265,7 +281,16 @@ async function resolveReactions() {
         if (loops % 2 === 0) triggerGlitch();
     }
 
-    const wave = [...new Set(q.map(([x, y]) => `${x},${y}`))].map(s => s.split(",").map(Number)); 
+    // Optimize: Use Set directly with coordinate objects instead of string conversion
+    const seen = new Set();
+    const wave = [];
+    for (const [x, y] of q) {
+      const key = y * cols + x; // Use numeric key instead of string
+      if (!seen.has(key)) {
+        seen.add(key);
+        wave.push([x, y]);
+      }
+    }
     q.length = 0;
 
     for (const [x, y] of wave) {
@@ -302,7 +327,8 @@ function processTurn() {
   aiTimeout = setTimeout(() => {
     let move = makeAIMove(board, current, playerTypes[current].difficulty, rows, cols, players.length);
     if (move) {
-        document.querySelectorAll('.last-move').forEach(el => el.classList.remove('last-move'));
+        // Optimize: Track and remove last move class directly instead of querySelectorAll
+        if (lastMoveCell) lastMoveCell.classList.remove('last-move');
         lastMoveCell = boardEl.children[move.y * cols + move.x];
         lastMoveCell?.classList.add('last-move');
         makeMove(move.x, move.y);

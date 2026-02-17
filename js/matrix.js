@@ -28,7 +28,12 @@ export function initMatrix() {
     canvas.style.pointerEvents = 'none';
     document.body.appendChild(canvas);
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    // Optimize: Add debouncing to resize handler
+    let resizeCanvasTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeCanvasTimeout);
+        resizeCanvasTimeout = setTimeout(resizeCanvas, 100);
+    });
 }
 
 function resizeCanvas() {
