@@ -1,5 +1,5 @@
 /* js/ai.js - God-Mode Intelligence with Professional Prediction Engine */
-import { capacity, neighbors } from "./board.js";
+import { capacity, neighbors, cloneCell } from "./board.js";
 
 const WIN_SCORE = 10000;
 const LOS_SCORE = -10000;
@@ -53,13 +53,12 @@ function evaluateBoard(board, player, rows, cols) {
 }
 
 function simulateBoardState(initialBoard, x, y, player, rows, cols) {
-    // Optimize: More efficient shallow copy approach
+    // Optimize: More efficient shallow copy using utility function
     const clone = new Array(rows);
     for (let r = 0; r < rows; r++) {
         clone[r] = new Array(cols);
         for (let c = 0; c < cols; c++) {
-            const cell = initialBoard[r][c];
-            clone[r][c] = { owner: cell.owner, count: cell.count, isBlocked: cell.isBlocked };
+            clone[r][c] = cloneCell(initialBoard[r][c]);
         }
     }
     clone[y][x].owner = player;

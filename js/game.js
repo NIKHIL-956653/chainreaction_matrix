@@ -1,6 +1,6 @@
 /* js/game.js - Full Source with Magma Rain, Ad System, and Professional Hint Integration */
 import { playSound, toggleMute } from "./sound.js";
-import { capacity, neighbors, drawCell } from "./board.js";
+import { capacity, neighbors, drawCell, clearCapacityCache, cloneCell } from "./board.js";
 import { buildPlayerSettings } from "./player.js";
 import { makeAIMove, getProfessionalHint } from "./ai.js"; // INTEGRATED: Professional Hint Export
 import { spawnParticles, triggerShake, triggerFlash, triggerGlitch, triggerHeat, startCelebration } from "./fx.js"; 
@@ -210,6 +210,7 @@ function handleModeChange() {
 
 function resetGame() {
   closeModal(); updateHintUI();
+  clearCapacityCache(); // Clear memoization cache when board size changes
   const [c, r] = gridSelect.value.split("x").map(Number);
   cols = c; rows = r; current = 0; playing = true;
   firstMove = players.map(() => false); history = []; movesMade = 0;
@@ -241,13 +242,12 @@ function handleMove(x, y) {
 
 async function makeMove(x, y) {
   playSound("click");
-  // Optimize: More efficient state cloning - create simpler structure
+  // Optimize: More efficient state cloning using utility function
   const boardSnapshot = new Array(rows);
   for (let r = 0; r < rows; r++) {
     boardSnapshot[r] = new Array(cols);
     for (let c = 0; c < cols; c++) {
-      const cell = board[r][c];
-      boardSnapshot[r][c] = { owner: cell.owner, count: cell.count, isBlocked: cell.isBlocked };
+      boardSnapshot[r][c] = cloneCell(board[r][c]);
     }
   }
   history.push(JSON.stringify({ board: boardSnapshot, current, playing, firstMove: [...firstMove], scores: [...scores], movesMade }));

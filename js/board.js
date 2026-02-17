@@ -9,6 +9,17 @@ const el = (t, c, attrs = {}) => {
 
 // CAPACITY LOGIC with memoization
 const capacityCache = new Map();
+
+// Export function to clear cache when starting new games
+export function clearCapacityCache() {
+  capacityCache.clear();
+}
+
+// Utility function for efficient cell cloning
+export function cloneCell(cell) {
+  return { owner: cell.owner, count: cell.count, isBlocked: cell.isBlocked };
+}
+
 export const capacity = (x, y, rows, cols) => {
   // Create a unique key for this board configuration
   const key = `${x},${y},${rows},${cols}`;
